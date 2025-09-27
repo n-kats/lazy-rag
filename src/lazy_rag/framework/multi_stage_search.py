@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Literal, NotRequired, Protocol, TypedDict, cast, runtime_checkable
+from typing import Any, NotRequired, Protocol, TypedDict, cast, runtime_checkable
 
 
 class ServerConfig(TypedDict):
@@ -12,15 +12,14 @@ class ServerConfig(TypedDict):
 
 
 class SearchNodeConfig(TypedDict):
-    type: Literal["search"]
     name: str
-    server: ServerConfig
+    server_name: str
     topk: NotRequired[int]
     from_nodes: NotRequired[list[str]]
 
 
 class WorkflowConfig(TypedDict):
-    type: Literal["workflow"]
+    servers: list[ServerConfig]
     nodes: list[SearchNodeConfig]
 
 
@@ -85,7 +84,7 @@ class SearchNode:
     topk: int = 10
     from_nodes: list[str] = field(default_factory=list)
 
-    def model_dump(self) -> dict[str, object]:
+    def model_dump(self) -> SearchNodeConfig:
         return {
             "name": self.name,
             "server_name": self.server_name,
@@ -134,8 +133,6 @@ class Workflow:
     def __init__(self) -> None:
         self._servers: dict[str, SearchServer] = {}
         self._nodes: list[SearchNode] = []
-        self._dag: list[str] = []
-        self.log = ServerLog()
 
     def add(
         self,
@@ -157,14 +154,14 @@ class Workflow:
             name=name,
             server_name=server.name,
             topk=topk,
-            from_nodes=from_nodes.copy(),
+            from_nodes=list(from_nodes),
         )
         assert all(n.name != name for n in self._nodes), f"duplicate node name: {name}"
         self._nodes.append(node)
 
     def search(self, query: Any) -> tuple[NodeOutput, list[NodeOutput], ServerLog]:
         assert self._nodes, "no nodes in workflow"
-        trace = []
+        trace = list[NodeOutput]()
         log = ServerLog()
         out: NodeOutput
         for node in self._nodes:
@@ -200,7 +197,6 @@ class Workflow:
             workflow.add(
                 servers_dict[node.server_name],
                 node_name=node.name,
-                query=node.query,
                 topk=node.topk,
                 from_nodes=node.from_nodes,
             )
@@ -222,7 +218,7 @@ class Workflow:
         return found_entries
 
     def _exec_search(self, node: SearchNode, query: Any, trace: list[NodeOutput], log: ServerLog) -> NodeOutput:
-        server = self._servers.get(node.server_name)
+        server = self._servers[node.server_name]
         entries_from_previous_nodes = self._gather_entries_from_previous_nodes(trace, node.from_nodes)
 
         if entries_from_previous_nodes:
@@ -232,7 +228,10 @@ class Workflow:
                     node.name,
                     server.name,
                     "add_entries",
-                    {"from_nodes": list(node.from_nodes), "count": len(entries_from_previous_nodes)},
+                    {
+                        "from_nodes": list(node.from_nodes),
+                        "count": len(entries_from_previous_nodes),
+                    },
                 )
             )
 
