@@ -171,8 +171,8 @@ class Workflow:
 
     def model_dump(self) -> WorkflowConfig:
         return {
-            "servers": [s.model_dump() for s in self._servers.values()],
-            "nodes": [n.model_dump() for n in self._nodes],
+            "servers": [server.model_dump() for server in self._servers.values()],
+            "nodes": [node.model_dump() for node in self._nodes],
         }
 
     @classmethod
