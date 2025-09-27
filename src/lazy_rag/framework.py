@@ -4,17 +4,10 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal, NotRequired, Protocol, TypedDict, cast, runtime_checkable
 
-# ------- Config schemas -------
-
 
 class ServerConfig(TypedDict):
     type: str
     name: str
-    # 任意の追加フィールドは Any で受ける（各実装が読む）
-    # ここでは mypy 的に許すために NotRequired[Any] を使う
-    # 例: index_path など
-    # Pydantic 側の model_dump() はこの形に準拠
-    # why not: サーバごとの追加項目はレジストリ先の cls が解釈すれば十分
     extra: NotRequired[Any]
 
 
@@ -30,9 +23,6 @@ class SearchNodeConfig(TypedDict):
 class WorkflowConfig(TypedDict):
     type: Literal["workflow"]
     nodes: list[SearchNodeConfig]
-
-
-# ------- Core types -------
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,9 +120,6 @@ class SearchNodeCfg:
 NodeCfg = SearchNodeCfg
 
 
-# ------- Registry -------
-
-
 class ServerRegistry:
     _reg: dict[str, type[SearchServer]] = {}
 
@@ -146,9 +133,6 @@ class ServerRegistry:
             return cls._reg[server_type]
         except KeyError as e:
             raise KeyError(f"unregistered server type: {server_type}") from e
-
-
-# ------- Workflow -------
 
 
 class Workflow:
