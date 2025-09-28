@@ -1,0 +1,41 @@
+{
+  "name": "lazy-rag",
+  "build": {
+    "dockerfile": "docker/Dockerfile",
+    "context": "./docker"
+  },
+  "remoteUser": "ubuntu",
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "mounts": [
+    "source=python-extensions,target=/root/.vscode-server/extensions,type=volume"
+  ],
+  "postStartCommand": "bash -c 'source .devcontainer/scripts/setup_uv.sh'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "github.copilot",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "matangover.mypy",
+        "charliermarsh.ruff",
+        "njpwerner.autodocstring",
+        "saoudrizwan.claude-dev",
+        "kurusugawa-computer.markdown-copilot",
+        "eamodio.gitlens",
+        "sms-vscode.makefile-tools",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": ".venv/bin/python",
+        "python.linting.enabled": true,
+        "editor.formatOnSave": true,
+        "python.formatting.provider": "ruff",
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "always"
+        }
+      }
+    }
+  }
+}
+
