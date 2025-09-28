@@ -52,22 +52,29 @@ class ServerLog:
 @runtime_checkable
 class SearchServer(Protocol):
     @property
-    def name(self) -> str: ...
-    @property
-    def type(self) -> str: ...
+    def name(self) -> str:
+        pass
 
-    def add_entries(self, entries: Sequence[Entry]) -> None: ...
+    @property
+    def type(self) -> str:
+        pass
+
+    def add_entries(self, entries: Sequence[Entry]) -> None:
+        pass
 
     def search(
         self,
         query: str,
         topk: int,
-    ) -> list[SearchHit]: ...
+    ) -> list[SearchHit]:
+        pass
 
-    def model_dump(self) -> ServerConfig: ...
+    def model_dump(self) -> ServerConfig:
+        pass
 
     @classmethod
-    def load_from_config(cls, config: ServerConfig) -> SearchServer: ...
+    def load_from_config(cls, config: ServerConfig) -> SearchServer:
+        pass
 
 
 @dataclass(frozen=True, slots=True)
